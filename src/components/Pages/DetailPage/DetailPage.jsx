@@ -6,7 +6,6 @@ import SignedBlock from './SignedBlock/SignedBlock';
 import ValidatorDetail from './ValidatorDetail/ValidatorDetail';
 
 const DetailPage = () => {
-
   const { id } = useParams();
 
   const [validationDetail, setValidationDetail] = useState();
@@ -15,12 +14,12 @@ const DetailPage = () => {
     const dataList = await fetchCurrentValidatorsList();
     const data = dataList.find(item => item.address === id);
 
-    setValidationDetail(data || {})
+    setValidationDetail(data || {});
   }
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [id]);
   
   return (
     <div className={styles["root"]}>

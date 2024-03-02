@@ -19,7 +19,7 @@ const ListPage = () => {
 
   const columns = [
     { field: 'index', headerName: 'No', headerClassName: styles["table-header"], cellClassName: styles["table-cell"], width: 100, sortable: false },
-    { field: 'address', headerName: 'Validator', headerClassName: styles["table-header"], cellClassName: styles["table-cell"], width: 700, sortable: false, renderCell: (data) => <a href={`/validators/${data.value}`}>{data.value}</a>},
+    { field: 'address', headerName: 'Validator', headerClassName: styles["table-header"], cellClassName: styles["table-cell"], width: 800, sortable: false, renderCell: (data) => <a href={`/validators/${data.value}`}>{data.value}</a>},
     { field: 'moniker', headerName: 'Moniker', headerClassName: styles["table-header"], cellClassName: styles["table-cell"], width: 300, sortable: false },
     { field: 'uptime', headerName: 'Uptime', headerClassName: styles["table-header"], cellClassName: styles["table-cell"], width: 200, sortable: false, renderHeader: () => <div className={styles["table-header-item"]}>Uptime {isLoading && <CircularProgress />}</div>},
     { field: 'voting_power', headerName: 'Voting Power', headerClassName: styles["table-header"], cellClassName: styles["table-cell"], width: 300, sortable: false },

@@ -12,18 +12,25 @@ const SignedBlock = (props) => {
   const [isLoading, setIsloading] = useState(false);
 
   const fetchData = (validationDetail) => {
-    fetchLatestSignatures(validationDetail?.address).then(res => {
-      setData(res);
-      setIsloading(false);
-    });
+    if (validationDetail?.address) {
+      fetchLatestSignatures(validationDetail?.address).then(res => {
+        setData(res);
+        setIsloading(false);
+      }); 
+    } else {
+      setData([]);
+    }
   }
 
   useEffect(() => {
     let timer = undefined;
-    if (validationDetail) {
+    if (validationDetail && validationDetail?.address) {
       setIsloading(true);
       fetchData(validationDetail);
       timer = setInterval(() => fetchData(validationDetail), [4000]);
+    } else {
+      clearInterval(timer);
+      setData([]);
     }
 
     return () => {
@@ -36,13 +43,13 @@ const SignedBlock = (props) => {
   return (
     <div className={styles["root"]}>
       <div className={styles["container"]}>
-        <div className={styles["title"]}>100 Signed Block</div>
+        <div className={styles["title"]}>Signed Block</div>
         <div className={styles["line"]}></div>
         <div className={styles["block-container"]}>
           <div className={classNames(styles["block-list"], isLoading ? styles["block-list--loading"] : "")}>
             {
-              isLoading ? <CircularProgress /> : data.map((item, index) => <Tooltip title={<div key={`block-${index}`} className={styles["tooltip"]}>Block Number: {item.block_number}</div>}>
-                <Link key={`block-${index}`} className={classNames(styles["block"], item.sign_status ? styles["block--signed"] : "")} to={"/"}></Link>
+              isLoading ? <CircularProgress /> : data.map((item, index) => <Tooltip key={`block-${index}`} title={<div key={`block-${index}`} className={styles["tooltip"]}>Block Number: {item.block_number}</div>}>
+                <Link className={classNames(styles["block"], item.sign_status ? styles["block--signed"] : "")} to={"/"}></Link>
               </Tooltip>)
             }
           </div>
