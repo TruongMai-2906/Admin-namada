@@ -6,22 +6,25 @@ import { debounce } from 'lodash';
 import { useEffect, useRef, useState } from 'react';
 import { useSetRecoilState } from 'recoil';
 import styles from "./ListPage.module.scss";
+import { CircularProgress } from '@mui/material';
 
 const ListPage = () => {
   const setActiveLink = useSetRecoilState(activeLinkState);
   const apiRef = useGridApiRef();
   const [initData, setInitData] = useState([]);
   const [data, setData] = useState([]);
+  const [searchData, setSearchData] = useState("");
   const [detailDataList, setDetailDataList] = useState([]);
+  const [isLoading, setIsloading] = useState(false);
 
   const columns = [
     { field: 'index', headerName: 'No', headerClassName: styles["table-header"], cellClassName: styles["table-cell"], width: 100, sortable: false },
     { field: 'address', headerName: 'Validator', headerClassName: styles["table-header"], cellClassName: styles["table-cell"], width: 700, sortable: false, renderCell: (data) => <a href={`/validators/${data.value}`}>{data.value}</a>},
     { field: 'moniker', headerName: 'Moniker', headerClassName: styles["table-header"], cellClassName: styles["table-cell"], width: 300, sortable: false },
-    { field: 'uptime', headerName: 'Uptime', headerClassName: styles["table-header"], cellClassName: styles["table-cell"], width: 200, sortable: false },
+    { field: 'uptime', headerName: 'Uptime', headerClassName: styles["table-header"], cellClassName: styles["table-cell"], width: 200, sortable: false, renderHeader: () => <div className={styles["table-header-item"]}>Uptime {isLoading && <CircularProgress />}</div>},
     { field: 'voting_power', headerName: 'Voting Power', headerClassName: styles["table-header"], cellClassName: styles["table-cell"], width: 300, sortable: false },
-    { field: 'commitSignatures', headerName: 'Commit Signature', headerClassName: styles["table-header"], cellClassName: styles["table-cell"], width: 400, sortable: false },
-    { field: 'participation', headerName: 'Participation', headerClassName: styles["table-header"], cellClassName: styles["table-cell"], width: 400, sortable: false, renderCell: (data) => {
+    { field: 'commitSignatures', headerName: 'Commit Signature', headerClassName: styles["table-header"], cellClassName: styles["table-cell"], width: 400, sortable: false, renderHeader: () => <div className={styles["table-header-item"]}>Commit Signature {isLoading && <CircularProgress />}</div>},
+    { field: 'participation', headerName: 'Participation', headerClassName: styles["table-header"], cellClassName: styles["table-cell"], width: 400, sortable: false, renderHeader: () => <div className={styles["table-header-item"]}>Participation {isLoading && <CircularProgress />}</div>, renderCell: (data) => {
       const number = data.value ? Math.round(Number(data.value) * 100) / 100 : "";
       return number ? `${number}%` : ""
     }},
@@ -43,10 +46,15 @@ const ListPage = () => {
   }
 
   const getDetailData = async (visibleDataList) => {
-    return fetchSpecificValidatorsWithDetails(visibleDataList).then(data => setDetailDataList(data));
+    setIsloading(true);
+    return fetchSpecificValidatorsWithDetails(visibleDataList).then(data => {
+      setDetailDataList(data);
+      setIsloading(false);
+    });
   }
 
   const searchKeyword = (e) => {
+    setSearchData(e.target.value.toLowerCase());
     setInitData((old) => {
       const res = old.filter(obj => Object.values(obj).some(val => val.toString().toLowerCase().includes(e.target.value.toLowerCase())));
       setData(res);
@@ -67,7 +75,7 @@ const ListPage = () => {
     //get and fetch detail of the visible data in the table view
     const visibleDataList = gridPaginatedVisibleSortedGridRowEntriesSelector(apiRef.current.state);
     getDetailData(visibleDataList || initData.slice(0, 10));
-  }, [paginationModel, apiRef, initData, data]);
+  }, [paginationModel, apiRef, initData, searchData]);
 
   useEffect(() => {
     //map missing data to the list

@@ -29,6 +29,11 @@
     gap: 20px;
     flex-wrap: wrap;
     min-height: calc(50px * 6 + 20px * 5);
+
+    &--loading {
+        justify-content: center;
+        align-content: center;
+    }
 }
 
 .block {

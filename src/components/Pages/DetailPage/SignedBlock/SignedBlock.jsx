@@ -1,5 +1,5 @@
 import { fetchLatestSignatures } from "@/apis/store_api.ts";
-import { Tooltip } from "@mui/material";
+import { CircularProgress, Tooltip } from "@mui/material";
 import classNames from "classnames";
 import { useEffect, useState } from "react";
 import styles from "./SignedBlock.module.scss";
@@ -9,14 +9,19 @@ const SignedBlock = (props) => {
   const { data: validationDetail } = props;
 
   const [data, setData] = useState([]);
+  const [isLoading, setIsloading] = useState(false);
 
   const fetchData = (validationDetail) => {
-    fetchLatestSignatures(validationDetail?.address).then(res => setData(res));
+    fetchLatestSignatures(validationDetail?.address).then(res => {
+      setData(res);
+      setIsloading(false);
+    });
   }
 
   useEffect(() => {
     let timer = undefined;
     if (validationDetail) {
+      setIsloading(true);
       fetchData(validationDetail);
       timer = setInterval(() => fetchData(validationDetail), [4000]);
     }
@@ -34,9 +39,9 @@ const SignedBlock = (props) => {
         <div className={styles["title"]}>100 Signed Block</div>
         <div className={styles["line"]}></div>
         <div className={styles["block-container"]}>
-          <div className={styles["block-list"]}>
+          <div className={classNames(styles["block-list"], isLoading ? styles["block-list--loading"] : "")}>
             {
-              data.map((item, index) => <Tooltip title={<div className={styles["tooltip"]}>Block Number: {item.block_number}</div>}>
+              isLoading ? <CircularProgress /> : data.map((item, index) => <Tooltip title={<div key={`block-${index}`} className={styles["tooltip"]}>Block Number: {item.block_number}</div>}>
                 <Link key={`block-${index}`} className={classNames(styles["block"], item.sign_status ? styles["block--signed"] : "")} to={"/"}></Link>
               </Tooltip>)
             }
