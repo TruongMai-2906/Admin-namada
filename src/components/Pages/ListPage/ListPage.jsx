@@ -1,0 +1,99 @@
+import { fetchCurrentValidatorsList, fetchSpecificValidatorsWithDetails } from '@/apis/store_api.ts';
+import { activeLinkState } from '@/recoil/listState';
+import SearchIcon from '@mui/icons-material/Search';
+import { DataGrid, gridPaginatedVisibleSortedGridRowEntriesSelector, useGridApiRef } from '@mui/x-data-grid';
+import { debounce } from 'lodash';
+import { useEffect, useRef, useState } from 'react';
+import { useSetRecoilState } from 'recoil';
+import styles from "./ListPage.module.scss";
+
+const ListPage = () => {
+  const setActiveLink = useSetRecoilState(activeLinkState);
+  const apiRef = useGridApiRef();
+  const [initData, setInitData] = useState([]);
+  const [data, setData] = useState([]);
+  const [detailDataList, setDetailDataList] = useState([]);
+
+  const columns = [
+    { field: 'index', headerName: 'No', headerClassName: styles["table-header"], cellClassName: styles["table-cell"], width: 100, sortable: false },
+    { field: 'address', headerName: 'Validator', headerClassName: styles["table-header"], cellClassName: styles["table-cell"], width: 700, sortable: false, renderCell: (data) => <a href={`/validators/${data.value}`}>{data.value}</a>},
+    { field: 'moniker', headerName: 'Moniker', headerClassName: styles["table-header"], cellClassName: styles["table-cell"], width: 300, sortable: false },
+    { field: 'uptime', headerName: 'Uptime', headerClassName: styles["table-header"], cellClassName: styles["table-cell"], width: 200, sortable: false },
+    { field: 'voting_power', headerName: 'Voting Power', headerClassName: styles["table-header"], cellClassName: styles["table-cell"], width: 300, sortable: false },
+    { field: 'commitSignatures', headerName: 'Commit Signature', headerClassName: styles["table-header"], cellClassName: styles["table-cell"], width: 400, sortable: false },
+    { field: 'participation', headerName: 'Participation', headerClassName: styles["table-header"], cellClassName: styles["table-cell"], width: 400, sortable: false, renderCell: (data) => {
+      const number = data.value ? Math.round(Number(data.value) * 100) / 100 : "";
+      return number ? `${number}%` : ""
+    }},
+  ];
+
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,
+    pageSize: 10,
+  });
+
+  const fetchData = async () => {
+    const data = await fetchCurrentValidatorsList();
+    if (data) {
+      const finalData = data.map((item, index) => ({...item, index: index + 1}))
+
+      setData(finalData);
+      setInitData(finalData);
+    }
+  }
+
+  const getDetailData = async (visibleDataList) => {
+    return fetchSpecificValidatorsWithDetails(visibleDataList).then(data => setDetailDataList(data));
+  }
+
+  const searchKeyword = (e) => {
+    setInitData((old) => {
+      const res = old.filter(obj => Object.values(obj).some(val => val.toString().toLowerCase().includes(e.target.value.toLowerCase())));
+      setData(res);
+
+      return old;
+    })
+  }
+
+  const debounceSearch = useRef(debounce((nextValue) => searchKeyword(nextValue), 500)).current;
+
+  useEffect(() => {
+    //init data
+    setActiveLink("/validators");
+    fetchData();
+  }, [setActiveLink]);
+
+  useEffect(() => {
+    //get and fetch detail of the visible data in the table view
+    const visibleDataList = gridPaginatedVisibleSortedGridRowEntriesSelector(apiRef.current.state);
+    getDetailData(visibleDataList || initData.slice(0, 10));
+  }, [paginationModel, apiRef, initData, data]);
+
+  useEffect(() => {
+    //map missing data to the list
+    setData(oldData => oldData.map(item => ({...item, ...detailDataList.find(detail => detail.validator === item.address)})));
+  }, [detailDataList]);
+
+  return (
+    <div className={styles["root"]}>
+      <div className={styles["container"]}>
+        <form className={styles["search-form"]}>
+          <input type="text" id="search" name="search" className={styles["search"]} onChange={(e) => debounceSearch(e)} />
+          <SearchIcon className={styles["search-icon"]} />
+        </form>
+        <DataGrid
+          apiRef={apiRef}
+          getRowId={(row) => row.address}
+          rows={data}
+          columns={columns}
+          pageSizeOptions={[10]}
+          paginationModel={paginationModel}
+          onPaginationModelChange={setPaginationModel}
+          disableColumnFilter 
+        />
+      </div>
+    </div>
+  );
+};
+
+export default ListPage;
