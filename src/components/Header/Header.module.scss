@@ -20,15 +20,15 @@
 
 .title {
     font-family: var(--primary-font);
-    font-size: 24px;
+    font-size: 18px;
     font-weight: 700;
-    line-height: 36px;
+    line-height: 30px;
 }
 
 .description {
     font-family: var(--primary-font);
-    font-size: 16px;
-    line-height: 24px;
+    font-size: 14px;
+    line-height: 20px;
 }
 
 
@@ -41,7 +41,7 @@
     padding: 15px 40px;
     background-color: rgba(0, 0, 0, 0.4);
     border: 1px solid #bbbbbb;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 400;
     color: var(--secondary-color);
     border-radius: 10px;
@@ -52,4 +52,5 @@
     top: 50%;
     left: 10px;
     transform: translateY(-50%);
+    cursor: pointer;
 }

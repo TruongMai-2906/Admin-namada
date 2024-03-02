@@ -6,13 +6,12 @@ import styles from "./Header.module.scss";
 
 const Header = () => {
   const navigate = useNavigate();
+  const searchRef = useRef();
 
-  const searchKeyword = (e) => {
-    const searchData = e.target.value.trim();
+  const handleSearch = () => {
+    const searchData = searchRef.current.value.trim();
     navigate(`/validators/${searchData}`)
   }
-
-  const debounceSearch = useRef(debounce((nextValue) => searchKeyword(nextValue), 500)).current;
 
   return (
     <div className={styles["root"]}>
@@ -22,8 +21,8 @@ const Header = () => {
           <div className={styles["description"]}>https://namada-rpc.validatorvn.com</div>
         </div>
         <form className={styles["search-form"]}>
-          <input type="text" id="search" name="search" className={styles["search"]} onChange={(e) => debounceSearch(e)} />
-          <SearchIcon className={styles["search-icon"]} />
+          <input ref={searchRef} type="text" id="search" name="search" className={styles["search"]} />
+          <SearchIcon className={styles["search-icon"]} onClick={() => handleSearch()} />
         </form>
       </div>
     </div>
